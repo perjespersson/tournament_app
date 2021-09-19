@@ -1,0 +1,25 @@
+
+  <% if tournament_authenticated? %>
+    <%= render 'tournaments/show' %>
+  <% else %>
+
+    <div class="wrapper drop-shadow">
+
+      <h1><%= @tournament.name %></h1>
+
+      <% flash.each do |message_type, message| %>
+        <div class="alert alert-<%= message_type %>" style="width: calc(100% - 40px); margin:0 auto;"><%= message %></div>
+      <% end %>
+
+      <%= form_for(:session, url: sessions_path) do |f| %>
+
+        <div class="d-flex">
+          <%= f.password_field :pin, class: 'form-control', placeholder: 'Ange pin...', style: 'width:50px;' %>
+
+          <%= f.hidden_field :id, value: @tournament.id %>
+
+          <%= f.submit "Visa turnering", class: "btn btn-primary" %>
+        </div>
+      <% end %>
+    </div>
+  <% end %>

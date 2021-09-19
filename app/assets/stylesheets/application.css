@@ -1,0 +1,157 @@
+/*
+ * This is a manifest file that'll be compiled into application.css, which will include all the files
+ * listed below.
+ *
+ * Any CSS and SCSS file within this directory, lib/assets/stylesheets, or any plugin's
+ * vendor/assets/stylesheets directory can be referenced here using a relative path.
+ *
+ * You're free to add application-wide styles to this file and they'll appear at the bottom of the
+ * compiled file so the styles you add here take precedence over styles defined in any other CSS/SCSS
+ * files in this directory. Styles in this file should be added after the last require_* statement.
+ * It is generally better to create a new file per style scope.
+ *
+ *= require_tree .
+ *= require_self
+ */
+
+/*
+ *Basic
+ */
+body{
+  background-color: #f4f4f4 !important;
+  font-family: 'Poppins', sans-serif !important;
+}
+
+h1,h2,h3,h4,h5,h6{
+  color:black;
+  text-align: center;
+  padding: 20px 0;
+}
+
+ h1{
+   font-weight:700;
+   font-size: 54px !important;
+   font-family: 'Otomanopee One', sans-serif;
+ }
+
+ a{
+  text-decoration: none !important;
+  color: black !important;
+  padding: 10px 0;
+  }
+
+  a:hover{
+    text-decoration: underline !important;
+    background-color: transparent !important;
+  }
+
+  ul{
+    list-style-type: none;
+  }
+
+  .wrapper{
+    max-width: 800px;
+    margin:0 auto;
+    background-color:white;
+    width: 90%;
+    border-radius: 5px;
+  }
+
+  .drop-shadow{
+    box-shadow: 0 1px 2px 0 rgb(0 0 0 / 10%) !important;
+  }
+
+  .wrapper input[type=number] {
+    border: 2px solid lightgray;
+    -moz-appearance: textfield;
+    width: 50px;
+    height: 50px;
+    text-align: center;
+    margin-right: 10px;
+  }
+
+  .wrapper input[type=number]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+  }
+
+  .form-control{
+    background-color: #F2F2F2 !important;
+    border: 0px solid white !important;
+    border-top-right-radius: 0px !important;
+    border-bottom-right-radius: 0px !important;
+    font-size: 18px !important;
+    /*width: 90% !important;*/
+    margin:0 auto;
+  }
+
+  label{
+    margin-left: 5%;
+    padding-top: 20px;
+    padding-bottom: 5px;
+  }
+
+  .btn {
+    background-color: #f2f2f2;
+  }
+
+  .submit_button{
+    margin:25px auto;
+    margin-bottom:0px;
+    display: block !important;
+  }
+
+ /*
+ *Menu
+ */
+ .navbar{
+   background-color: white;
+ }
+
+ .nav-item a{
+   text-decoration: none;
+   padding:0 10px;
+   text-align: center;
+   color:black !important;
+   font-size: 26px;
+ }
+
+  /*
+ *Paginate
+ */
+.pagination{
+  margin:0 auto;
+  margin-top:10px;
+}
+
+.pagination li a{
+  color:rgb(77, 77, 77) !important;
+  padding:5px;
+}
+
+.pagination .disabled {
+  opacity: 0.5;
+}
+
+  /*
+ *Table
+ */
+
+ .table th, .table tr{
+   text-align: center;
+ }
+
+ .table .no-center{
+   text-align: left;
+ }
+
+ .container{
+   padding-top:96px;
+ }
+
+ .container .form-control{
+   margin-bottom:20px;
+ }
+
+ .container label{
+  margin-bottom:5px;
+}

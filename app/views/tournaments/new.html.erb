@@ -1,0 +1,23 @@
+<div style="height:150px; width:50px;">
+</div>
+
+<% flash.each do |message_type, message| %>
+  <div class="alert alert-<%= message_type %>"><%= message %></div>
+<% end %>
+
+<div class="wrapper drop-shadow" style="background-color: transparent; max-width:500px;">
+      <div class="col drop-shadow bg-white" style="padding-left: 0;">
+        <h1 style="font-size:36px;!important padding-bottom: 0px;">Skapa</h1>
+        <%= form_for(@tournament) do |f| %>
+
+          <%= f.label :name, 'Namn', style: "padding-top:0px;" %>
+          <%= f.text_field :name, class: 'form-control', placeholder: 'Ange namn...' %>
+
+          <%= f.label :pin, 'Pin' %>
+          <%= f.password_field :pin, class: 'form-control', placeholder: 'Ange pin...'  %>
+
+          <%= f.submit "Skapa turnering", class: "btn btn-primary submit_button" %>
+        <% end %>
+        <br>
+      </div>
+</div>

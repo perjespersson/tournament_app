@@ -1,0 +1,56 @@
+<div style="height:150px; width:50px;">
+</div>
+
+<div class="wrapper drop-shadow">
+  <h1>Turneringar</h1>
+
+  <%= form_for "", :url => tournaments_path, method: :get do |f| %>
+    <div class ="d-flex" style="padding:20px; margin: 0 auto;">
+      <%= f.text_field :search, class: 'form-control', placeholder: "Sök efter turnering..." %>
+
+      <%= button_tag( :class => 'btn') do %>
+        <i class="fas fa-search"></i>
+      <% end %>
+    </div>
+  <% end %>
+
+  <% unless @tournaments.length() <= 0 %>
+
+    <% unless @search.nil? %>
+      <h4 style="text-align: left; margin-left:20px; font-weight: 400; font-size:18px;">Du sökte efter: <b>"<%= @search %>"</b></h4>
+    <% end %>
+
+    <div class="accordion accordion-flush" id="accordionFlushExample">
+      <% @tournaments.each do |tournament| %>
+
+
+        <div class="accordion-item">
+          <h2 class="accordion-header" id="flush-heading<%= tournament.id %>" style="padding:0;">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapse<%= tournament.id %>" aria-expanded="false" aria-controls="flush-collapse<%= tournament.id %>" style="padding:30px 20px;">
+              <%= tournament.name %>
+            </button>
+          </h2>
+          <div id="flush-collapse<%= tournament.id %>" class="accordion-collapse collapse" aria-labelledby="flush-heading<%= tournament.id %>" data-bs-parent="#accordionFlushExample">
+            <div class="accordion-body">
+            <%= form_for(:session, url: sessions_path) do |f| %>
+
+              <div class="d-flex">
+                <%= f.password_field :pin, class: 'form-control', placeholder: 'Ange pin...' %>
+
+                <%= f.hidden_field :id, value: tournament.id %>
+
+                <%= f.submit "Visa turnering", class: "btn btn-primary" %>
+              </div>
+            <% end %>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+
+  <% else %>
+    <h4 style="text-align: left; margin-left:20px; font-weight: 400; font-size:18px;">Din sökning gav inga resultat</h4>
+  <% end %>
+</div>
+
+<%= will_paginate @games, :previous_label => '<i class="fas fa-arrow-left"></i>', :next_label => '<i class="fas fa-arrow-right"></i>' %>

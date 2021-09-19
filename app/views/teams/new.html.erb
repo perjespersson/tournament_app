@@ -1,0 +1,41 @@
+<div style="height:150px; width:50px;">
+</div>
+
+<div class="wrapper drop-shadow">
+  <% unless @tournament.tournament_created == true %>
+    <h1><%= @tournament.name %></h1>
+
+    <% flash.each do |message_type, message| %>
+      <div class="alert alert-<%= message_type %>"><%= message %></div>
+    <% end %>
+
+    <%= form_for(@team) do |f| %>
+
+      <div class ="d-flex" style="padding:0 20px; margin: 0 auto;">
+        <%= f.text_field :name, class: 'form-control', placeholder: "Lägg till lag..." %>
+
+        <%= button_tag( :class => 'btn') do %>
+          <i class="fas fa-plus"></i>
+        <% end %>
+      </div>
+
+      <%= f.hidden_field :tournament_id, value: params[:tournament_id] %>
+    <% end %>
+
+    <% @teams.each do |cur_team| %>
+      <h3><%= cur_team.name %></h3>
+      <%= link_to 'Delete team', tournament_team_path(@tournament.id, cur_team.id), method: :delete, data: { confirm: 'Are you sure?' } %>
+    <% end %>
+
+
+    <%= form_for "games", :url => tournament_games_path(@tournament.id) do |f| %>
+      <div class ="d-flex" style="padding:0 20px; margin: 0 auto;">
+        <%= f.number_field :number_of_rounds, class: 'form-control', value: 1 %>
+        <%= f.submit "Skapa turnering", class: "btn btn-primary" %>
+      </div>
+    <% end %>
+
+  <% else %>
+    <p>Du har redan lagt till lag!</p>
+  <% end %>
+</div>
