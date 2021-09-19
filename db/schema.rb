@@ -12,6 +12,9 @@
 
 ActiveRecord::Schema.define(version: 2021_09_18_223650) do
 
+  # These are extensions that must be enabled in order to support this database
+  enable_extension "plpgsql"
+
   create_table "fifa_teams", force: :cascade do |t|
     t.string "name"
     t.string "stars"
@@ -25,9 +28,9 @@ ActiveRecord::Schema.define(version: 2021_09_18_223650) do
     t.string "round"
     t.integer "home_team_score"
     t.integer "away_team_score"
-    t.integer "tournament_id", null: false
-    t.integer "home_team_id"
-    t.integer "away_team_id"
+    t.bigint "tournament_id", null: false
+    t.bigint "home_team_id"
+    t.bigint "away_team_id"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.string "home_fifa_team_id"
@@ -39,7 +42,7 @@ ActiveRecord::Schema.define(version: 2021_09_18_223650) do
 
   create_table "teams", force: :cascade do |t|
     t.string "name"
-    t.integer "tournament_id", null: false
+    t.bigint "tournament_id", null: false
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.index ["tournament_id"], name: "index_teams_on_tournament_id"
