@@ -16,72 +16,56 @@ class TournamentsController < ApplicationController
 
   def show
     @tournament = Tournament.find(params[:id])
-    games_query = "SELECT Games.id, Games.home_team_score, Games.away_team_score, Games.round,
-                   h_t.name AS home_team,
-                   a_t.name AS away_team,
-                   h_f_t.name AS home_fifa_team,
-                   a_f_t.name AS away_fifa_team,
-                   h_f_t.img AS home_fifa_team_img,
-                   a_f_t.img AS away_fifa_team_img
-                   FROM Games
-                   LEFT JOIN teams AS h_t ON Games.home_team_id = h_t.id
-                   LEFT JOIN teams AS a_t ON Games.away_team_id = a_t.id
-                   LEFT JOIN fifa_teams AS h_f_t ON Games.home_fifa_team_id = h_f_t.id
-                   LEFT JOIN fifa_teams AS a_f_t ON Games.away_fifa_team_id = a_f_t.id
-                   WHERE Games.tournament_id = #{params[:id]}"
+    games_query = <<~QUERY
+                    SELECT
+                      Games.id,
+                      Games.home_team_score,
+                      Games.away_team_score,
+                      Games.round,
+                      h_t.name AS home_team,
+                      a_t.name AS away_team,
+                      h_f_t.name AS home_fifa_team,
+                      a_f_t.name AS away_fifa_team,
+                      h_f_t.img AS home_fifa_team_img,
+                      a_f_t.img AS away_fifa_team_img
+                    FROM Games
+                      LEFT JOIN teams AS h_t ON Games.home_team_id = h_t.id
+                      LEFT JOIN teams AS a_t ON Games.away_team_id = a_t.id
+                      LEFT JOIN fifa_teams AS h_f_t ON Games.home_fifa_team_id::bigint = h_f_t.id
+                      LEFT JOIN fifa_teams AS a_f_t ON Games.away_fifa_team_id::bigint = a_f_t.id
+                    WHERE
+                      Games.tournament_id = #{params[:id]}
+                  QUERY
 
-    table_result = Team.where(tournament_id: params[:id]).as_json
+    result_query = <<~QUERY
+                  SELECT
+                    teams.name,
+                    COUNT(CASE WHEN games.home_team_score IS NOT NULL AND games.away_team_score IS NOT NULL THEN 1 END) AS played_games,
+                    SUM(CASE WHEN teams.id = games.home_team_id AND games.home_team_score IS NOT NULL THEN games.home_team_score ELSE 0 END) + SUM(CASE WHEN teams.id = games.away_team_id AND games.away_team_score IS NOT NULL THEN games.away_team_score ELSE 0 END) AS scored_goals,
+                    SUM(CASE WHEN teams.id = games.home_team_id AND games.home_team_score IS NOT NULL THEN games.away_team_score ELSE 0 END) + SUM(CASE WHEN teams.id = games.away_team_id AND games.away_team_score IS NOT NULL THEN games.home_team_score ELSE 0 END) AS conceded_goals,
+                    SUM(CASE WHEN teams.id = games.home_team_id AND games.home_team_score IS NOT NULL THEN games.home_team_score ELSE 0 END) + SUM(CASE WHEN teams.id = games.away_team_id AND games.away_team_score IS NOT NULL THEN games.away_team_score ELSE 0 END) - SUM(CASE WHEN teams.id = games.home_team_id AND games.home_team_score IS NOT NULL THEN games.away_team_score ELSE 0 END) - SUM(CASE WHEN teams.id = games.away_team_id AND games.away_team_score IS NOT NULL THEN games.home_team_score ELSE 0 END) AS goal_difference,
+                    SUM(CASE WHEN teams.id = games.home_team_id AND games.home_team_score > games.away_team_score THEN 1 ELSE 0 END) + SUM(CASE WHEN teams.id = games.away_team_id AND games.home_team_score < games.away_team_score THEN 1 ELSE 0 END) AS wins,
+                    SUM(CASE WHEN teams.id = games.home_team_id AND games.home_team_score = games.away_team_score THEN 1 ELSE 0 END) + SUM(CASE WHEN teams.id = games.away_team_id AND games.home_team_score = games.away_team_score THEN 1 ELSE 0 END) AS draws,
+                    SUM(CASE WHEN teams.id = games.home_team_id AND games.home_team_score < games.away_team_score THEN 1 ELSE 0 END) + SUM(CASE WHEN teams.id = games.away_team_id AND games.home_team_score > games.away_team_score THEN 1 ELSE 0 END) AS losses,
+                    (3 * (SUM(CASE WHEN teams.id = games.home_team_id AND games.home_team_score > games.away_team_score THEN 1 ELSE 0 END) + SUM(CASE WHEN teams.id = games.away_team_id AND games.home_team_score < games.away_team_score THEN 1 ELSE 0 END))) + SUM(CASE WHEN teams.id = games.home_team_id AND games.home_team_score = games.away_team_score THEN 1 ELSE 0 END) + SUM(CASE WHEN teams.id = games.away_team_id AND games.home_team_score = games.away_team_score THEN 1 ELSE 0 END) AS points
+                  FROM
+                    teams
+                  LEFT JOIN
+                    games
+                  ON
+                    teams.id = games.home_team_id OR teams.id = games.away_team_id
+                  WHERE
+                    teams.tournament_id = #{params[:id]}
+                  GROUP BY
+                    teams.name
+                QUERY
 
-    (0...table_result.length()).each do |i|
-
-      table_result[i][:wins] = 0
-      table_result[i][:draws] = 0
-      table_result[i][:losses] = 0
-      table_result[i][:played_games] = 0
-
-      home_games = Game.where(home_team_id: table_result[i]["id"])
-      away_games = Game.where(away_team_id: table_result[i]["id"])
-
-      (0...home_games.length()).each do |j|
-        unless home_games[j].home_team_score.nil? && home_games[j].home_team_score.nil?
-          if home_games[j].home_team_score > home_games[j].away_team_score
-            table_result[i][:wins] = table_result[i][:wins] + 1
-          elsif home_games[j].home_team_score == home_games[j].away_team_score
-            table_result[i][:draws] = table_result[i][:draws] + 1
-          else
-            table_result[i][:losses] = table_result[i][:losses] + 1
-          end
-
-          table_result[i][:played_games] = table_result[i][:played_games] + 1
-        end
-      end
-
-      (0...away_games.length()).each do |j|
-        unless away_games[j].home_team_score.nil? && away_games[j].home_team_score.nil?
-          if away_games[j].away_team_score > away_games[j].home_team_score
-            table_result[i][:wins] = table_result[i][:wins] + 1
-          elsif away_games[j].away_team_score == away_games[j].home_team_score
-            table_result[i][:draws] = table_result[i][:draws] + 1
-          else
-            table_result[i][:losses] = table_result[i][:losses] + 1
-          end
-
-          table_result[i][:played_games] = table_result[i][:played_games] + 1
-        end
-      end
-
-      table_result[i][:scored_goals] = home_games.sum(:home_team_score) + away_games.sum(:away_team_score)
-      table_result[i][:conceded_goals] = home_games.sum(:away_team_score) + away_games.sum(:home_team_score)
-      table_result[i][:goal_difference] = table_result[i][:scored_goals] - table_result[i][:conceded_goals]
-      table_result[i][:points] = (table_result[i][:wins] * 3) + table_result[i][:draws]
-    end
-
-    @games = ActiveRecord::Base.connection.execute(games_query).paginate(page: params[:page], per_page: (table_result.length().to_f/2).floor(0))
-    @result = table_result.sort_by { |hsh| [hsh[:points], hsh[:goal_difference], hsh[:scored_goals]] }.reverse
+    @games = ActiveRecord::Base.connection.execute(games_query)
+    @result = ActiveRecord::Base.connection.execute(result_query).sort_by { |hsh| [hsh["points"], hsh["goal_difference"], hsh["scored_goals"]] }.reverse
   end
 
   def index
-    @tournaments = Tournament.where("name LIKE ?", "%#{params[:search]}%").reverse.paginate(page: params[:page], per_page: 5)
+    @tournaments = Tournament.where("name LIKE ?", "%#{params[:search]}%").reverse
     @search = params[:search]
   end
 
