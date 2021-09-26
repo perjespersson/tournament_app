@@ -16,26 +16,8 @@ class TournamentsController < ApplicationController
 
   def show
     @tournament = Tournament.find(params[:id])
-    games_query = <<~QUERY
-                    SELECT
-                      Games.id,
-                      Games.home_team_score,
-                      Games.away_team_score,
-                      Games.round,
-                      h_t.name AS home_team,
-                      a_t.name AS away_team,
-                      h_f_t.name AS home_fifa_team,
-                      a_f_t.name AS away_fifa_team,
-                      h_f_t.img AS home_fifa_team_img,
-                      a_f_t.img AS away_fifa_team_img
-                    FROM Games
-                      LEFT JOIN teams AS h_t ON Games.home_team_id = h_t.id
-                      LEFT JOIN teams AS a_t ON Games.away_team_id = a_t.id
-                      LEFT JOIN fifa_teams AS h_f_t ON Games.home_fifa_team_id::bigint = h_f_t.id
-                      LEFT JOIN fifa_teams AS a_f_t ON Games.away_fifa_team_id::bigint = a_f_t.id
-                    WHERE
-                      Games.tournament_id = #{params[:id]}
-                  QUERY
+    games = Game.where(tournament_id: params[:id])
+    @games = games.paginate(page: params[:page], per_page: games.where(round: "1").count)
 
     result_query = <<~QUERY
                   SELECT
@@ -60,12 +42,11 @@ class TournamentsController < ApplicationController
                     teams.name
                 QUERY
 
-    @games = ActiveRecord::Base.connection.execute(games_query)
     @result = ActiveRecord::Base.connection.execute(result_query).sort_by { |hsh| [hsh["points"], hsh["goal_difference"], hsh["scored_goals"]] }.reverse
   end
 
   def index
-    @tournaments = Tournament.where("name LIKE ?", "%#{params[:search]}%").reverse
+    @tournaments = Tournament.where("name LIKE ?", "%#{params[:search]}%").reverse.paginate(page: params[:page], per_page: 5)
     @search = params[:search]
   end
 
